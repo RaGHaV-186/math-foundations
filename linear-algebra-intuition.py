@@ -1,6 +1,12 @@
 import math
 
 class Vector():
+    """A dense vector with from-scratch geometric operations (no NumPy).
+
+    Supports arithmetic, dot product, magnitude, normalization, cosine
+    similarity, angle, distance, and projection. Immutable: every
+    operation returns a new Vector.
+    """
     def __init__(self,components):
         self.components = list(components)
         self.dimension = len(components)
@@ -76,5 +82,52 @@ class Vector():
         scalar = self.dot(other)/other.dot(other)
         return scalar * other
 
+class Matrix():
+    def __init__(self,mat):
+        self.mat = [list(row) for row in mat]
+        self.shape = (len(mat),len(mat[0]))
 
+    def __repr__(self):
+        return f"Matrix({self.mat})"
 
+    def __str__(self):
+        return f"Matrix({self.mat})"
+
+    def transpose(self):
+        res = []
+        for i in range(self.shape[1]):
+            new_row = []
+            for j in range(self.shape[0]):
+                new_row.append(self.mat[j][i])
+            res.append(new_row)
+
+        return Matrix(res)
+
+    def __matmul__(self, other):
+        if isinstance(other, Vector):
+            if self.shape[1] != other.dimension:
+                raise ValueError(f"dim mismatch: {self.shape} @ {other.dimension}")
+            return Vector([
+                sum(self.mat[i][j] * other.components[j] for j in range(self.shape[1]))
+                for i in range(self.shape[0])
+            ])
+
+        if self.shape[1] != other.shape[0]:
+            raise ValueError(f"inner dims must match: {self.shape} @ {other.shape}")
+
+        rows = []
+        for i in range(self.shape[0]):
+            row = []
+            for j in range(other.shape[1]):
+                s = 0
+                for k in range(self.shape[1]):
+                    s += self.mat[i][k] * other.mat[k][j]
+                row.append(s)
+            rows.append(row)
+        return Matrix(rows)
+
+Q = Matrix([[1, 0], [0, 1]])
+K = Matrix([[1, 0], [1, 1]])
+
+scores = Q @ K.transpose()
+print(scores)
