@@ -127,41 +127,36 @@ class Matrix():
             rows.append(row)
         return Matrix(rows)
 
-def is_linearly_independert(vectors):
+def is_linearly_independent(vectors):
     n = len(vectors)
     dim = len(vectors[0].components)
     rows = [v.components[:] for v in vectors]
     rank = 0
-
     for col in range(dim):
         pivot = None
-        for row in range(rank,len(row)):
-            if abs(row[row][col]) > 1e-10:
+        for row in range(rank, len(rows)):
+            if abs(rows[row][col]) > 1e-10:
                 pivot = row
                 break
-            if pivot is None:
-                continue
-
-            rows[rank], rows[pivot] = rows[pivot], rows[rank]
-            scale = rows[rank][col]
-            rows[rank] = [x/scale for x rows[rank]]
-            for row in range(len(rows)):
-                if row != rank and abs(rows[row][col]) > 1e-10:
-                    factor = rows[row][col]
-                    rows[row] = [rows[row][j] - factor * rows[rank][j] for j in range(dim)]
-            rank += 1
-            return rank == n
+        if pivot is None:
+            continue
+        rows[rank], rows[pivot] = rows[pivot], rows[rank]
+        scale = rows[rank][col]
+        rows[rank] = [x / scale for x in rows[rank]]
+        for row in range(len(rows)):
+            if row != rank and abs(rows[row][col]) > 1e-10:
+                factor = rows[row][col]
+                rows[row] = [rows[row][j] - factor * rows[rank][j] for j in range(dim)]
+        rank += 1
+    return rank == n
 
 def gram_schmidt(vectors):
     orthonormal = []
     for v in vectors:
         w = v
         for u in orthonormal:
-            w = w - w.projection(u)      # subtract projection onto each previous u
-        if w.magnitude() < 1e-10:        # residual ~0 → v was dependent, skip it
+            w = w - w.projection(u)
+        if w.magnitude() < 1e-10:
             continue
-        orthonormal.append(w.normalize())  # normalize the perpendicular leftover
+        orthonormal.append(w.normalize())
     return orthonormal
-
-
-
