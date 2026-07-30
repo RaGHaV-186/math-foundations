@@ -219,3 +219,50 @@ def gram_schmidt(vectors):
 
 def relu(v):
     return Vector([max(0, x) for x in v.components])
+
+
+#matrix transformations
+
+def rotation_2d(theta):
+    c,s = math.cos(theta), math.sin(theta)
+    return Matrix([[c,-s],[s,c]])
+
+def scaling_2d(sx,sy):
+    return Matrix([[sx,0],[0,sy]])
+
+def shearing_2d(kx,ky):
+    return Matrix([[1,kx],[ky,1]])
+
+def reflection_x():
+    return Matrix([[1, 0], [0, -1]])
+
+def reflection_y():
+    return Matrix([[-1, 0], [0, 1]])
+
+def eigenvalues_2x2(matrix):
+    a, b = matrix.mat[0]
+    c, d = matrix.mat[1]
+    trace = a + d
+    det = a * d - b * c
+    discriminant = trace ** 2 - 4 * det
+    if discriminant < 0:
+        real = trace / 2
+        imag = (-discriminant) ** 0.5 / 2
+        return (complex(real, imag), complex(real, -imag))
+    sqrt_disc = discriminant ** 0.5
+    return ((trace + sqrt_disc) / 2, (trace - sqrt_disc) / 2)
+
+def eigenvector_2x2(matrix, eigenvalue):
+    a, b = matrix.mat[0]
+    c, d = matrix.mat[1]
+    if abs(b) > 1e-10:
+        v = [b, eigenvalue - a]
+    elif abs(c) > 1e-10:
+        v = [eigenvalue - d, c]
+    else:
+        if abs(a - eigenvalue) < 1e-10:
+            v = [1, 0]
+        else:
+            v = [0, 1]
+    mag = (v[0] ** 2 + v[1] ** 2) ** 0.5
+    return [v[0] / mag, v[1] / mag]
