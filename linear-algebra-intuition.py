@@ -1,5 +1,5 @@
 import math
-
+import random
 
 class Vector():
     """A dense vector with from-scratch geometric operations (no NumPy).
@@ -43,11 +43,11 @@ class Vector():
     def __mul__(self, scaler):
         return Vector([a*scaler for a in self.components])
 
-    def __rmul__(self, scaler):
-        return self * scaler
+    def __rmul__(self, scalar):
+        return self * scalar
 
-    def __truediv__(self, scaler):
-        return Vector([a/scaler for a in self.components])
+    def __truediv__(self, scalar):
+        return Vector([a/scalar for a in self.components])
 
     def __neg__(self):
         return Vector([a*-1 for a in self.components])
@@ -94,6 +94,30 @@ class Matrix():
     def __str__(self):
         return f"Matrix({self.mat})"
 
+    def __add__(self, other):
+        return Matrix([
+            [self.mat[i][j] + other.mat[i][j] for j in range(self.shape[1])]
+            for i in range(self.shape[0])
+        ])
+
+    def __sub__(self, other):
+        return Matrix([
+            [self.mat[i][j] - other.mat[i][j] for j in range(self.shape[1])]
+            for i in range(self.shape[0])
+        ])
+
+    def scalar_multiply(self, scalar):
+        return Matrix([
+            [self.mat[i][j] * scalar for j in range(self.shape[1])]
+            for i in range(self.shape[0])
+        ])
+
+    def element_wise_multiply(self, other):
+        return Matrix([
+            [self.mat[i][j] * other.mat[i][j] for j in range(self.shape[1])]
+            for i in range(self.shape[0])
+        ])
+
     def transpose(self):
         res = []
         for i in range(self.shape[1]):
@@ -103,6 +127,13 @@ class Matrix():
             res.append(new_row)
 
         return Matrix(res)
+
+    @staticmethod
+    def identity(n):
+        return Matrix([
+            [1 if i == j else 0 for j in range(n)]  # 1 when row==col, else 0
+            for i in range(n)
+        ])
 
     def __matmul__(self, other):
         if isinstance(other, Vector):
@@ -126,6 +157,31 @@ class Matrix():
                 row.append(s)
             rows.append(row)
         return Matrix(rows)
+
+    def determinant(self):
+        if self.shape == (1, 1):
+            return self.mat[0][0]
+        if self.shape == (2, 2):
+            return self.mat[0][0] * self.mat[1][1] - self.mat[0][1] * self.mat[1][0]
+        det = 0
+        for j in range(self.shape[1]):
+            minor = Matrix([
+                [self.mat[i][k] for k in range(self.shape[1]) if k != j]
+                for i in range(1, self.shape[0])
+            ])
+            det += ((-1) ** j) * self.mat[0][j] * minor.determinant()
+        return det
+
+    def inverse_2x2(self):
+        det = self.determinant()
+        if det == 0:
+            raise ValueError("Matrix is singular, no inverse exists")
+        a, b = self.mat[0][0], self.mat[0][1]
+        c, d = self.mat[1][0], self.mat[1][1]
+        return Matrix([
+            [d / det, -b / det],
+            [-c / det, a / det]
+        ])
 
 def is_linearly_independent(vectors):
     n = len(vectors)
@@ -160,3 +216,6 @@ def gram_schmidt(vectors):
             continue
         orthonormal.append(w.normalize())
     return orthonormal
+
+def relu(v):
+    return Vector([max(0, x) for x in v.components])
